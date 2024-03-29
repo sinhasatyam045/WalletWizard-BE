@@ -17,6 +17,7 @@ app.use(
     origin: [
       "https://walletwizard-be.onrender.com",
       "https://wallet-wizard-fe.vercel.app",
+      "https://localhost:3000",
     ],
   })
 );
