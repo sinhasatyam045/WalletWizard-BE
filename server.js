@@ -14,7 +14,10 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(
   cors({
-    origin: "https://walletwizard-be.onrender.com",
+    origin: [
+      "https://walletwizard-be.onrender.com",
+      "https://wallet-wizard-fe.vercel.app",
+    ],
   })
 );
 
