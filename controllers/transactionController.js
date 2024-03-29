@@ -1,46 +1,54 @@
 const transactionModel = require("../models/transactionModel");
-const moment = require("moment");
 
 const getAllTransaction = async (req, res) => {
-  console.log("Request", req.body);
+  const { userid, frequency, selectedDate, type } = req.body;
+
   try {
-    const { frequency, userid, selectedDate, type } = req.body;
-    let query = {};
+    let transactions;
+    let startDate, endDate;
+    let query = { userid };
 
-    if (userid) {
-      if (frequency !== "custom") {
-        query = {
-          date: {
-            $gt: moment().subtract(Number(frequency), "d").toDate(),
-            $lte: new Date(),
-          },
-          userid,
-          ...(type !== "all" && { type }),
-        };
-      } else if (frequency === "custom") {
-        query = {
-          date: {
-            $gte: selectedDate[0],
-            $lte: selectedDate[1],
-          },
-          userid,
-        };
-
-        if (type && type !== "all") {
-          query.type = type;
+    switch (frequency) {
+      case "7":
+        startDate = new Date(new Date().setDate(new Date().getDate() - 7));
+        endDate = new Date();
+        query.date = { $gte: startDate, $lte: endDate };
+        break;
+      case "30":
+        startDate = new Date(new Date().setDate(new Date().getDate() - 30));
+        endDate = new Date();
+        query.date = { $gte: startDate, $lte: endDate };
+        break;
+      case "365":
+        startDate = new Date(new Date().setDate(new Date().getDate() - 365));
+        endDate = new Date();
+        query.date = { $gte: startDate, $lte: endDate };
+        break;
+      case "custom":
+        if (selectedDate && selectedDate.length === 2) {
+          startDate = new Date(selectedDate[0]);
+          endDate = new Date(selectedDate[1]);
+          query.date = { $gte: startDate, $lte: endDate };
+        } else {
+          return res.status(400).json({ error: "Invalid custom date range" });
         }
-      }
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid frequency value" });
     }
 
-    console.log("Query", query);
+    if (type === "income") {
+      query.type = "income";
+    } else if (type === "expense") {
+      query.type = "expense";
+    }
 
-    const transactions = await transactionModel.find(query);
-    console.log(transactions);
+    transactions = await transactionModel.find(query);
 
-    res.status(200).send(transactions);
+    res.status(200).json(transactions);
   } catch (error) {
-    console.log(error);
-    res.status(500).json(error);
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -85,4 +93,9 @@ const editTransaction = async (req, res) => {
   }
 };
 
-module.exports = { getAllTransaction, addTransaction, editTransaction, deleteTransaction };
+module.exports = {
+  getAllTransaction,
+  addTransaction,
+  editTransaction,
+  deleteTransaction,
+};

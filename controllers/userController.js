@@ -2,6 +2,8 @@ const userModel = require("../models/userModel");
 
 // login callback
 const loginController = async (req, res) => {
+  console.log("req", req);
+  console.log("res", res);
   try {
     const { email, password } = req.body;
     const user = await userModel.findOne({ email, password });
